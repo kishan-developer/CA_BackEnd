@@ -227,9 +227,6 @@
 // };
 
 
-
-
-
 /// 2 Aug Code 
 
 
@@ -486,4 +483,5 @@ exports.updatePaymentStatus = async (req, res) => {
         console.error("Error updating payment status:", err);
         return res.status(500).json({ message: "Server error" });
     }
+
 };
