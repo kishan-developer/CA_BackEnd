@@ -25,7 +25,7 @@ const app = express();
 
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://thehimalayacarpets.online",
+  "https://thehimalayacarpets.in",
 ];
 
 app.use(
@@ -101,3 +101,4 @@ const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
+
