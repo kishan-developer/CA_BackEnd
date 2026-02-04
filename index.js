@@ -82,7 +82,7 @@ app.use("/api/v1", router);
 
 // Default route
 app.get("/", (req, res) => {
-  res.send("Himalya Carpets APIs Live Now Today...");
+  res.send("Himalya Carpets APIs Live Today Now...");
 });
 
 // Serve static files
@@ -101,6 +101,7 @@ const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
+
 
 
 
