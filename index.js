@@ -66,11 +66,11 @@ app.use(helmet());
 //     tempFileDir: "/tmp",
 //   })
 // );
-app.use(fileUpload({
-    useTempFiles: true,
-    tempFileDir: "/tmp/",   // important for Linux servers
-    limits: { fileSize: 100 * 1024 * 1024 }
-}));
+// app.use(fileUpload({
+//     useTempFiles: true,
+//     tempFileDir: "/tmp/",   // important for Linux servers
+//     limits: { fileSize: 100 * 1024 * 1024 }
+// }));
 
 
 
@@ -101,6 +101,7 @@ const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
+
 
 
 
