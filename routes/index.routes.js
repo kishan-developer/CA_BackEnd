@@ -160,14 +160,14 @@ router.post("/upload", async (req, res) => {
         const imageList = Array.isArray(images) ? images : [images];
 
         // File size check
-        for (const image of imageList) {
-            if (image.size > 100 * 1024 * 1024) {
-                return res.status(400).json({
-                    success: false,
-                    message: `Image "${image.name}" should not be larger than 100MB`,
-                });
-            }
-        }
+        // for (const image of imageList) {
+        //     if (image.size > 100 * 1024 * 1024) {
+        //         return res.status(400).json({
+        //             success: false,
+        //             message: `Image "${image.name}" should not be larger than 100MB`,
+        //         });
+        //     }
+        // }
 
         // Use first file's name for slug creation
         const firstFileName = imageList[0].name;
@@ -428,3 +428,4 @@ router.post("/custom-rug-request", async (req, res) => {
 });
 
 module.exports = router;
+
