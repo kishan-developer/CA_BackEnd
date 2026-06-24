@@ -34,7 +34,7 @@ function contactEmailTemplate({ name, email, phone, subject, message }) {
           <div class="section-title">Message:</div>
           <div>${message}</div>
         </div>
-        <div class="footer">This is an automated message from the Adshelter platform.</div>
+        <div class="footer">This is an automated message from the VyaparSewa platform.</div>
       </div>
     </body></html>
   `;

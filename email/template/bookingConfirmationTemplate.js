@@ -2,8 +2,8 @@ module.exports = function bookingConfirmationTemplate(userName, bookingId, amoun
     return `
     <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e0e0e0; border-radius: 12px; padding: 32px; background-color: #ffffff; color: #333;">
         <div style="text-align: center; margin-bottom: 24px;">
-            <div style="background-color: #4f46e5; color: white; width: 64px; height: 64px; line-height: 64px; border-radius: 16px; display: inline-block; font-size: 24px; font-weight: bold;">AS</div>
-            <h1 style="color: #111827; margin-top: 16px; font-size: 24px; font-weight: 800; letter-spacing: -0.025em; text-transform: uppercase;">Adshelter</h1>
+            <div style="background-color: #4f46e5; color: white; width: 64px; height: 64px; line-height: 64px; border-radius: 16px; display: inline-block; font-size: 24px; font-weight: bold;">VS</div>
+            <h1 style="color: #111827; margin-top: 16px; font-size: 24px; font-weight: 800; letter-spacing: -0.025em; text-transform: uppercase;">VyaparSewa</h1>
         </div>
         
         <h2 style="color: #111827; font-size: 20px; font-weight: 700; margin-bottom: 16px;">Booking Confirmed! 🎉</h2>
@@ -35,14 +35,14 @@ module.exports = function bookingConfirmationTemplate(userName, bookingId, amoun
         </p>
 
         <div style="text-align: center;">
-            <a href="https://adshelter.in/user/bookings" style="background-color: #4f46e5; color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 14px; display: inline-block;">View Dashboard</a>
+            <a href="https://vyaparsewa.com/user/bookings" style="background-color: #4f46e5; color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 14px; display: inline-block;">View Dashboard</a>
         </div>
 
         <hr style="border: 0; border-top: 1px solid #e5e7eb; margin: 32px 0;" />
         
         <p style="font-size: 12px; color: #9ca3af; text-align: center;">
-            This is an automated operational notification from the Adshelter platform.<br/>
-            &copy; 2026 Adshelter India. All rights reserved.
+            This is an automated operational notification from the VyaparSewa platform.<br/>
+            &copy; 2026 VyaparSewa. All rights reserved.
         </p>
     </div>
     `;

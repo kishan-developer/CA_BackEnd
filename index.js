@@ -92,7 +92,7 @@ app.use("/api/v1", router);
 
 // Default route
 app.get("/", (req, res) => {
-  res.send("Adsheleter APIs Live...");
+  res.send("Vyapar Sewa APIs Live...");
 });
 
 // Serve static files
