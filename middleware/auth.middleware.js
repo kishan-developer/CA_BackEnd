@@ -95,3 +95,159 @@ exports.isUser = asyncHandler(async (req, res, next) => {
     // All Good
     next();
 });
+
+// Role-based authorization middleware
+exports.authorizeRoles = (...allowedRoles) => {
+    return asyncHandler(async (req, res, next) => {
+        const user = req?.user ?? null;
+
+        if (!user) {
+            return res.error("Unauthorized access. User not authenticated.", 401);
+        }
+
+        if (!allowedRoles.includes(user.role)) {
+            return res.error(`Access denied. Required roles: ${allowedRoles.join(", ")}`, 403);
+        }
+
+        // Get latest user details from DB
+        const userDetails = await User.findById(user._id).select("-password -refreshToken");
+
+        if (!userDetails) {
+            return res.error("User not found", 404);
+        }
+
+        if (!allowedRoles.includes(userDetails.role)) {
+            return res.error("User role can't be verified", 403);
+        }
+
+        req.user = userDetails;
+        next();
+    });
+};
+
+// Super Admin middleware
+exports.isSuperAdmin = asyncHandler(async (req, res, next) => {
+    const user = req?.user ?? null;
+
+    if (!user) {
+        return res.error("Unauthorized access. User not authenticated.", 401);
+    }
+
+    if (user.role !== "super_admin") {
+        return res.error("Access denied. Super Admin only.", 403);
+    }
+
+    const userDetails = await User.findById(user._id).select("-password -refreshToken");
+
+    if (!userDetails) {
+        return res.error("User not found", 404);
+    }
+
+    if (userDetails.role !== "super_admin") {
+        return res.error("User role can't be verified", 403);
+    }
+
+    req.user = userDetails;
+    next();
+});
+
+// Mentor middleware
+exports.isMentor = asyncHandler(async (req, res, next) => {
+    const user = req?.user ?? null;
+
+    if (!user) {
+        return res.error("Unauthorized access. User not authenticated.", 401);
+    }
+
+    if (user.role !== "mentor") {
+        return res.error("Access denied. Mentor only.", 403);
+    }
+
+    const userDetails = await User.findById(user._id).select("-password -refreshToken");
+
+    if (!userDetails) {
+        return res.error("User not found", 404);
+    }
+
+    if (userDetails.role !== "mentor") {
+        return res.error("User role can't be verified", 403);
+    }
+
+    req.user = userDetails;
+    next();
+});
+
+// Operations Manager middleware
+exports.isOperationsManager = asyncHandler(async (req, res, next) => {
+    const user = req?.user ?? null;
+
+    if (!user) {
+        return res.error("Unauthorized access. User not authenticated.", 401);
+    }
+
+    if (user.role !== "operations_manager") {
+        return res.error("Access denied. Operations Manager only.", 403);
+    }
+
+    const userDetails = await User.findById(user._id).select("-password -refreshToken");
+
+    if (!userDetails) {
+        return res.error("User not found", 404);
+    }
+
+    if (userDetails.role !== "operations_manager") {
+        return res.error("User role can't be verified", 403);
+    }
+
+    req.user = userDetails;
+    next();
+});
+
+// Finance Manager middleware
+exports.isFinanceManager = asyncHandler(async (req, res, next) => {
+    const user = req?.user ?? null;
+
+    if (!user) {
+        return res.error("Unauthorized access. User not authenticated.", 401);
+    }
+
+    if (user.role !== "finance_manager") {
+        return res.error("Access denied. Finance Manager only.", 403);
+    }
+
+    const userDetails = await User.findById(user._id).select("-password -refreshToken");
+
+    if (!userDetails) {
+        return res.error("User not found", 404);
+    }
+
+    if (userDetails.role !== "finance_manager") {
+        return res.error("User role can't be verified", 403);
+    }
+
+    req.user = userDetails;
+    next();
+});
+
+// Permission-based authorization middleware
+exports.hasPermission = (permission) => {
+    return asyncHandler(async (req, res, next) => {
+        const user = req?.user ?? null;
+
+        if (!user) {
+            return res.error("Unauthorized access. User not authenticated.", 401);
+        }
+
+        // Super Admin has all permissions
+        if (user.role === "super_admin") {
+            return next();
+        }
+
+        // Check if user has the required permission
+        if (!user.permissions || !user.permissions.includes(permission)) {
+            return res.error(`Access denied. Required permission: ${permission}`, 403);
+        }
+
+        next();
+    });
+};

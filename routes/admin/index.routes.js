@@ -1,7 +1,6 @@
 const express = require("express");
 const adminRouter = express.Router();
-const productRoutes = require("../../routes/admin/product.routes");
-const categoryRoutes = require("../../routes/admin/category.routes");
+
 const {
     isAuthenticated,
     isAdmin,
@@ -9,22 +8,49 @@ const {
 
 const userRouter = require("./user.routes");
 const { getOverview } = require("../../controller/admin/overview.controller");
-const orderRouter = require("./order.routes");
-const fabricRouter = require("./fabric.routes");
-const couponRouter = require("./coupon.routes");
+
+const { getAdminDashboardStats } = require("../../controller/admin/admin.controller.js");
+
 const adminOfferRouter = require("./offer.routes");
 
-// Not Want  ot inlcude Fabric ->
-adminRouter.use("/fabrics", fabricRouter);
+const bannerrouter = require("./banner.routes.js")
+const adminblogRouter = require("./admin.blog.routes");
+const contactRouter = require("./contact.routes")
+const adminNewsletterrouter = require("./newsletter.routes.js");
+const analyticsrouter = require("./analytics.routes.js")
+const maprouter = require("./map.routes.js");
+const cmsRouter = require("./cms.routes.js");
+
 // Private Routes For Admin
 adminRouter.use(isAuthenticated, isAdmin);
-adminRouter.use("/product", productRoutes);
-adminRouter.use("/category", categoryRoutes);
-adminRouter.use("/user", userRouter);
-adminRouter.use("/orders", orderRouter);
-adminRouter.use("/coupon", couponRouter);
-adminRouter.use("/offer", adminOfferRouter);
+
+// website banner manage
+// route - /api/v1/admin/banner
+adminRouter.use("/banner", bannerrouter);
+
+// route - /api/v1/admin/analytics
+adminRouter.use("/analytics", analyticsrouter);
+
+// route - /api/v1/admin/newsletter
+adminRouter.use("/newsletter", adminNewsletterrouter);
+
+// route - /api/v1/admin/contact
+adminRouter.use("/contact", contactRouter)
+
+// route - /api/v1/admin/map
+adminRouter.use("/map", maprouter);
+
+// Admin Dashboard Route
+// route - /api/v1/admin/adminOverview
+adminRouter.get("/adminOverview", getAdminDashboardStats )
+
 adminRouter.get("/overview", getOverview);
+
+adminRouter.use("/user", userRouter);
+adminRouter.use("/cms", cmsRouter);
+
+adminRouter.use("/offer", adminOfferRouter);
+
 adminRouter.get('/newsletters',async(req,res)=>{
     try {
         const emails = await NewsletterModel.find({});

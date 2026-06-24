@@ -16,6 +16,10 @@ const jwt = require("jsonwebtoken");
 const passwordChangeSuccessTemplate = require("../email/template/passwordChangeSuccessTemplate");
 require("dotenv").config();
 
+const { OAuth2Client } = require("google-auth-library");
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+const appleSignin = require("apple-signin-auth");
+
 
 // Generate Token And Referesh Tokens
 const generateTokenAndRefereshTokens = asyncHandler(async (userId) => {
@@ -28,95 +32,7 @@ const generateTokenAndRefereshTokens = asyncHandler(async (userId) => {
     return { token, refreshToken };
 });
 
-// // Send OTP
-// exports.sendOtp = asyncHandler(async (req, res) => {
-    
-//     // get email
-//     const { email } = req.body;
 
-//     console.log("Email Id", email)
-//     // check is Email Have Or Not if have then go forward or return errr;
-//     if (!email) {
-//         return res.error("Email is required", 401);
-//     }
-//     // check is user already exit or not if user already exit then return error otherwise go forward
-//     const isUserAlreadyExit = await User.findOne({ email });
-
-//     console.log("users", isUserAlreadyExit)
-
-//     if (isUserAlreadyExit) {
-//         return res.error("User Already Exit", 401);
-//     }
-//     // genrate unique OTP
-//     let otp = await generateOtp();
-
-//     console.log("OTP", otp)
-
-//     // Save OTP In Database With Email And Send Response SuccessFull..
-//     const otpPayload = { otp, email };
-//     // Delete All Otp Before Saving New Otp
-//     await OTP.deleteMany({ email });
-//     const newOtp = await OTP.create(otpPayload);
-//     return res.success("Otp Generated Successfully", newOtp);
-// });
-
-// Send OTP
-// exports.sendOtp = asyncHandler(async (req, res) => {
-
-//     const { email } = req.body;
-
-//     if (!email) {
-//         return res.error("Email is required", 400);
-//     }
-
-//     // Check user exists
-//     const isUserAlreadyExists = await User.findOne({ email });
-//     if (isUserAlreadyExists) {
-//         return res.error("User Already Exists", 400);
-//     }
-
-//     // Generate OTP
-//     const otp = await generateOtp();   // OR await if async
-//     console.log("Generated OTP:", otp);
-
-//     // Save OTP in DB
-//     await OTP.deleteMany({ email });
-//     const newOtp = await OTP.create({ email, otp });
-
-//     /* ---------------- EMAIL CONFIGURATION ---------------- */
-
-//     const transporter = nodemailer.createTransport({
-//         service: "gmail",
-//         auth: {
-//             user: process.env.SMTP_USER,  // your gmail
-//             pass: process.env.SMTP_PASS,  // APP PASSWORD only
-//         },
-//     });
-
-//     const mailOptions = {
-//         from: process.env.SMTP_USER,
-//         to: email,
-//         subject: "Your OTP for Registration",
-//         html: `
-//             <h2>Verification OTP</h2>
-//             <p>Your OTP is: <b>${otp}</b></p>
-//             <p>It will expire in 10 minutes.</p>
-//         `,
-//     };
-
-//     try {
-//         await transporter.mailSender(mailOptions);
-//         console.log("OTP Email Sent Successfully!");
-
-//         return res.success("OTP sent successfully", {
-//             email,
-//         });
-
-//     } catch (error) {
-//         console.log("Email Error:", error);
-//         return res.error("Failed to send OTP email", 500);
-//     }
-// });
 
 // Send OTP Working 
 exports.sendOtp = asyncHandler(async (req, res) => {
@@ -156,8 +72,11 @@ exports.sendOtp = asyncHandler(async (req, res) => {
         return res.error("Failed to send OTP email", 500);
     }
 });
+// 
 
+// Data not founde in the same address 
 
+// in VPS server handle bothe 3 project in the sam ve signt eh passworn toe get more dqta  
 // Controller function to handle user registration
 exports.registerUser = asyncHandler(async (req, res) => {
 
@@ -567,3 +486,110 @@ exports.resetPassValidateToken = asyncHandler(async (req, res) => {
 
     return res.success("Reset token is valid");
 });
+
+exports.googleLogin = asyncHandler(async (req, res) => {
+    const { token } = req.body;
+    if (!token) {
+        return res.error("Google token is missing", 400);
+    }
+    const ticket = await googleClient.verifyIdToken({
+        idToken: token,
+        audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    const payload = ticket.getPayload();
+    const { email, given_name, family_name, sub, picture } = payload;
+    
+    let user = await User.findOne({ email });
+    if (!user) {
+        user = await User.create({
+            firstName: given_name || "User",
+            lastName: family_name || "",
+            email,
+            avatar: picture,
+            authProvider: "google",
+            providerId: sub
+        });
+    }
+
+    const { token: appToken, refreshToken } = await generateTokenAndRefereshTokens(user._id);
+
+    res.cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        secure: false,
+        sameSite: "Lax",
+        expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    });
+    res.cookie("token", appToken, {
+        httpOnly: true,
+        secure: false,
+        sameSite: "Lax",
+        expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    });
+
+    const userData = user.toObject();
+    delete userData.password;
+    delete userData.refreshToken;
+
+    return res.success(`Welcome ${user.firstName}`, { user: userData, token: appToken });
+});
+
+exports.appleLogin = asyncHandler(async (req, res) => {
+    const { token, user: appleUserStr } = req.body; 
+    if (!token) {
+        return res.error("Apple token is missing", 400);
+    }
+    
+    const appleIdTokenClaims = await appleSignin.verifyIdToken(token, {
+        audience: process.env.APPLE_CLIENT_ID,
+        ignoreExpiration: true 
+    });
+    
+    const { email, sub } = appleIdTokenClaims;
+    
+    let firstName = "Apple";
+    let lastName = "User";
+    
+    if (appleUserStr) {
+        try {
+            const appleUser = typeof appleUserStr === 'string' ? JSON.parse(appleUserStr) : appleUserStr;
+            if (appleUser.name) {
+                firstName = appleUser.name.firstName || "Apple";
+                lastName = appleUser.name.lastName || "User";
+            }
+        } catch(e) { console.error("Could not parse apple user", e); }
+    }
+
+    let user = await User.findOne({ email: email || `${sub}@apple.id.apple.com` });
+    
+    if (!user) {
+        user = await User.create({
+            firstName,
+            lastName,
+            email: email || `${sub}@apple.id.apple.com`,
+            authProvider: "apple",
+            providerId: sub
+        });
+    }
+
+    const { token: appToken, refreshToken } = await generateTokenAndRefereshTokens(user._id);
+
+    res.cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        secure: false,
+        sameSite: "Lax",
+        expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    });
+    res.cookie("token", appToken, {
+        httpOnly: true,
+        secure: false,
+        sameSite: "Lax",
+        expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    });
+
+    const userData = user.toObject();
+    delete userData.password;
+    delete userData.refreshToken;
+
+    return res.success(`Welcome ${user.firstName}`, { user: userData, token: appToken });
+});
+

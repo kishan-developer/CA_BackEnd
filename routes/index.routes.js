@@ -1,150 +1,56 @@
 const express = require("express");
 const authRoutes = require("../routes/auth.routes");
 const adminRoutes = require("../routes/admin/index.routes");
+const serviceRoutes = require("../routes/service.routes");
+const consultationRoutes = require("../routes/consultation.routes");
+const notificationRoutes = require("../routes/notification.routes");
 
-const {
-    getAllProducts,
-    getProductById,
-    getProductByfabric,
-} = require("../controller/public/product/product.controller");
-const {
-    getAllCategories,
-    getCategoryById,
-} = require("../controller/public/product/category.controller");
+
 
 
 const imageUploader = require("../utils/imageUploader.utils");
 
 const userRoutes = require("./user/index.routes");
+const usernewsletterrouter = require("./newsletter.routes");
+
 const paymentRoutes = require("./payment.routes");
 const mailSender = require("../utils/mailSender.utils");
 const bookVideoCallTemplate = require("../email/template/bookVideoCallTemplate");
 const bookVideoCallAdminTemplate = require("../email/template/bookVideoCallAdminTemplate");
 const Newsletter = require("../model/Newsletter.model");
 const contactEmailTemplate = require("../email/template/contactEmailTemplate");
-const {
-    getOffer,
-    getOfferOfProduct,
-} = require("../controller/public/product/offer.controller");
+
+
+const { 
+  submitContactForm, 
+  getAllMessages,
+  deleteAllMessages
+} = require("../controller/public/contact/contact.controller");
 const adminCustomRugNotificationTemplate = require("../email/template/adminCustomRugNotificationTemplate");
 
 
 const router = express.Router();
 
+// Contact Routes - Place before other routes to avoid conflicts
+// 🌐 PUBLIC ROUTE
+router.post("/contact", submitContactForm);
+router.get("/contact", getAllMessages);
+router.delete("/contact", deleteAllMessages);
+
 router.use("/auth", authRoutes);
 router.use("/admin", adminRoutes);
 router.use("/user", userRoutes);
 router.use("/payment", paymentRoutes);
+router.use("/", serviceRoutes);
+router.use("/", consultationRoutes);
+router.use("/notifications", notificationRoutes);
 // Public routes
+// service
+
+router.use("/newsletter", usernewsletterrouter);
+
+// 🌐 ADMIN ROUTE
 // Products
-router.get("/products", getAllProducts);
-router.get("/products/:id", getProductById);
-router.get("/products/:fabric/:id", getProductByfabric);
-// Categories
-router.get("/categories", getAllCategories);
-router.get("/categories/:id", getCategoryById);
-router.get("/offer", getOffer);
-router.get("/offer/:productId", getOfferOfProduct);
-
-
-// router.post("/upload", async (req, res) => {
-
-//     console.log("req", req.files.files)
-//     try {
-//         const images = req.files?.files ?? null;
-//         const imageFileName = req.body.name;
-
-//         if (!images) {
-//             return res
-//                 .status(400)
-//                 .json({ success: false, message: "Please upload file first" });
-//         }
-
-//         const imageList = Array.isArray(images) ? images : [images];
-
-//         for (const image of imageList) {
-//             if (image.size > 100 * 1024 * 1024) {
-//                 return res.status(400).json({
-//                     success: false,
-//                     message: "Image should not be larger than 100MB",
-//                 });
-//             }
-//         }
-
-//         const slugFIleName = imageFileName.trim().replace(/\s+/g, "-");
-//         const result = await imageUploader(images, slugFIleName); // now uploads to local folder
-//         return res.status(200).json({
-//             success: true,
-//             message: "Images uploaded successfully",
-//             data: result,
-//         });
-//     } catch (err) {
-//         console.error("Upload error:", err);
-//         return res.status(500).json({
-//             success: false,
-//             message: "Server error",
-//             error: err.message,
-//         });
-//     }
-// });
-
-
-// AWS S3 Photo Upload URL 
-// /api/v1/upload 
-// router.post("/upload", async (req, res) => {
-//     try {
-//         const images = req.files?.files;
-
-//         if (!images) {
-//             return res.status(400).json({
-//                 success: false,
-//                 message: "Please upload file first",
-//             });
-//         }
-
-//         const imageList = Array.isArray(images) ? images : [images];
-
-//         // File size check
-//         for (const image of imageList) {
-//             if (image.size > 100 * 1024 * 1024) {
-//                 return res.status(400).json({
-//                     success: false,
-//                     message: "Image should not be larger than 100MB",
-//                 });
-//             }
-//         }
-
-//         // Use first file's name for slug creation
-//         const imageFileName = Array.isArray(images) ? images[0].name : images.name;
-
-      
-
-//         const slugFileName = imageFileName
-//             .trim()
-//             .replace(/\s+/g, "-")
-//             .replace(/\.[^/.]+$/, ""); // REMOVE existing extension
-
-//         const result = await imageUploader(images, slugFileName);
-
-//         return res.status(200).json({
-//             success: true,
-//             message: "Images uploaded successfully",
-//             data: result,
-//         });
-
-//     } catch (err) {
-//         console.error("Upload error:", err);
-//         return res.status(500).json({
-//             success: false,
-//             message: "Server error",
-//             error: err.message,
-//         });
-//     }
-// });
-
-
-
-
 router.post("/upload", async (req, res) => {
     try {
         const images = req.files?.files;
@@ -160,14 +66,14 @@ router.post("/upload", async (req, res) => {
         const imageList = Array.isArray(images) ? images : [images];
 
         // File size check
-        // for (const image of imageList) {
-        //     if (image.size > 100 * 1024 * 1024) {
-        //         return res.status(400).json({
-        //             success: false,
-        //             message: `Image "${image.name}" should not be larger than 100MB`,
-        //         });
-        //     }
-        // }
+        for (const image of imageList) {
+            if (image.size > 100 * 1024 * 1024) {
+                return res.status(400).json({
+                    success: false,
+                    message: `Image "${image.name}" should not be larger than 100MB`,
+                });
+            }
+        }
 
         // Use first file's name for slug creation
         const firstFileName = imageList[0].name;
@@ -196,7 +102,7 @@ router.post("/upload", async (req, res) => {
     }
 });
 
-
+// Video Call Booking Route
 router.post("/bookVideoCall", async (req, res) => {
     const { email, body } = req.body;
 
@@ -276,50 +182,6 @@ router.post("/newsletter", async (req, res) => {
     } catch (err) {
         console.error("Newsletter Error:", err);
         return res.error("Something went wrong. Please try again later.", 500);
-    }
-});
-
-
-// POST /api/contact
-router.post("/contact", async (req, res) => {
-    const { name, email, phone, subject, message } = req.body;
-
-    // Basic validation
-    if (!name || !email || !subject || !message) {
-        return res.status(400).json({ error: "Missing required fields" });
-    }
-
-    try {
-        const htmlBody = contactEmailTemplate({
-            name,
-            email,
-            phone,
-            subject,
-            message,
-        });
-
-        // Send mail to admin
-        await mailSender(
-            "carpetshimalaya@gmail.com",
-            `Contact Us: ${subject}`,
-            htmlBody
-        );
-
-        //  send a confirmation to user
-        const userBody = `
-      Hi ${name},<br/><br/>
-      Thanks for reaching out! We've received your message and will get back to you shortly.<br/><br/>
-      Regards,<br/>Himalaya Carpets Team
-    `;
-        await mailSender(email, "We received your message!", userBody);
-
-        return res.json({
-            success: true,
-            message: "Message sent successfully.",
-        });
-    } catch (err) {
-        console.error("Contact POST error:", err);
-        return res.status(500).json({ error: "Failed to send message." });
     }
 });
 

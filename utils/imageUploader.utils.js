@@ -3,7 +3,8 @@
 
 const fs = require("fs");
 const path = require("path");
-const s3 = require("../config/awsConfig");
+const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
+const s3Client = require("../config/awsConfig");
 
 const imageUploader = async (images, slugFileName) => {
     const list = Array.isArray(images) ? images : [images];
@@ -21,13 +22,14 @@ const imageUploader = async (images, slugFileName) => {
             Key: finalName,
             Body: fileBuffer,
             ContentType: image.mimetype,
-            // ACL: "public-read", // make file public
         };
 
-        const result = await s3.upload(params).promise();
+        const command = new PutObjectCommand(params);
+        await s3Client.send(command);
 
-        // Only push URL
-        uploadedUrls.push(result.Location);
+        // Construct URL manually
+        const url = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION || "us-east-1"}.amazonaws.com/${finalName}`;
+        uploadedUrls.push(url);
     }
 
     return uploadedUrls;

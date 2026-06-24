@@ -1,4 +1,5 @@
 const express = require("express");
+const http = require("http");
 const cookieParser = require("cookie-parser");
 const fileUpload = require("express-fileupload");
 const cors = require("cors");
@@ -12,6 +13,7 @@ const sendCustomResponse = require("./middleware/customResponse.middleware");
 const connectDB = require("./config/connectDb");
 const { globalErrorHandler } = require("./middleware/globalErrorHandler.middleware");
 const router = require("./routes/index.routes");
+const { initializeSocket } = require("./config/socket");
 
 dotenv.config();
 
@@ -24,8 +26,11 @@ const app = express();
 /* -------------------- CORS FIX (Express 5 Compatible) -------------------- */
 
 const allowedOrigins = [
-  "http://localhost:5173",
-  "https://thehimalayacarpets.in",
+  "http://localhost:3000",
+  "http://127.0.0.1:3000",
+  "http://192.168.1.6:3000",
+  "https://vyaparsewa.com",
+  "https://www.vyaparsewa.com",
 ];
 
 app.use(
@@ -56,6 +61,7 @@ app.use(
   })
 );
 
+// data limit for underlying body-parser ( default is 100kb, we can increase it if needed for file uploads or large payloads
 // Security headers
 app.use(helmet());
 
@@ -66,11 +72,15 @@ app.use(helmet());
 //     tempFileDir: "/tmp",
 //   })
 // );
+
 // app.use(fileUpload({
 //     useTempFiles: true,
 //     tempFileDir: "/tmp/",   // important for Linux servers
 //     limits: { fileSize: 100 * 1024 * 1024 }
 // }));
+
+
+
 
 
 
@@ -82,7 +92,7 @@ app.use("/api/v1", router);
 
 // Default route
 app.get("/", (req, res) => {
-  res.send("Himalya Carpets APIs Live...");
+  res.send("Adsheleter APIs Live...");
 });
 
 // Serve static files
@@ -96,9 +106,14 @@ app.use(globalErrorHandler);
 
 /* -------------------- Server Start -------------------- */
 
-const PORT = process.env.PORT || 5001;
+const PORT = process.env.PORT || 2001;
 
-app.listen(PORT, () => {
+const server = http.createServer(app);
+
+// Initialize Socket.io
+initializeSocket(server);
+
+server.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
 

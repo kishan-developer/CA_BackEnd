@@ -11,6 +11,8 @@ const {
     regenerateToken,
     getUserDetails,
     resetPassValidateToken,
+    googleLogin,
+    appleLogin,
 } = require("../controller/auth.controller");
 const { isAuthenticated } = require("../middleware/auth.middleware");
 
@@ -24,6 +26,8 @@ router.post("/register", registerUser);
 
 // {domain}/api/v1/auth/login
 router.post("/login", login);
+
+
 
 // {domain}/api/v1/auth/forgot-password-token
 router.post("/forgot-password-token", forgotPasswordToken);
@@ -43,3 +47,5 @@ router.post("/regenerate-token", regenerateToken);
 router.get("/user", isAuthenticated, getUserDetails);
 
 module.exports = router;
+
+

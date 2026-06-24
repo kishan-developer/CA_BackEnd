@@ -72,7 +72,7 @@ const userSchema = new mongoose.Schema(
         },
         phone: {
             type: String,
-            required: [true, "Phone number is required"],
+            required: false,
             trim: true,
             match: [
                 /^[1-9][0-9]{9}$/,
@@ -81,13 +81,32 @@ const userSchema = new mongoose.Schema(
         },
         password: {
             type: String,
-            required: true,
+            required: function () {
+                return this.authProvider === 'local';
+            },
             trim: true,
+        },
+        authProvider: {
+            type: String,
+            enum: ['local', 'google', 'apple'],
+            default: 'local'
+        },
+        providerId: {
+            type: String
         },
         role: {
             type: String,
-            enum: ["user", "admin"],
+            enum: ["user", "admin", "super_admin", "mentor", "operations_manager", "finance_manager"],
             default: "user",
+        },
+        permissions: {
+            type: [String],
+            default: [],
+        },
+        department: {
+            type: String,
+            enum: ["general", "consultation", "operations", "finance", "admin"],
+            default: "general",
         },
         shippingAddress: [
             {
@@ -132,7 +151,7 @@ const userSchema = new mongoose.Schema(
 );
 
 userSchema.pre("save", async function (next) {
-    if (!this.isModified("password")) {
+    if (!this.isModified("password") || !this.password) {
         return next();
     }
     this.password = await bcrypt.hash(this.password, 10);

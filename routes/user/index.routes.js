@@ -1,19 +1,42 @@
 const express = require("express");
 const { isAuthenticated } = require("../../middleware/auth.middleware");
-const cartRouter = require("./cart.routes");
-const wishlistRouter = require("./wishlist.routes");
-const { orderRouter } = require("./order.routes");
+
 const addressRouter = require("./adress.routes");
-const reviewRouter = require("./review.routes");
-const couponRouter = require("./coupon.routes");
+
+// servise route 
+
+const usermaprouter = require("./user.map.routes");
+const notificationrouter = require("./user.notification.routes")
+const userSupportrouter = require("./user.support.routes");
+const userManagementRouter = require("./userManagement.routes");
+
 const userRoutes = express.Router();
+
 const User = require('../../model/User.model')
-userRoutes.use("/cart", isAuthenticated, cartRouter);
-userRoutes.use("/wishlist", isAuthenticated, wishlistRouter);
-userRoutes.use("/orders", isAuthenticated, orderRouter);
+
+// Private Routes For User
+// adminRouter.use(isAuthenticated);
+
+// shelter 
+// Route  - /api/v1/user/service
+
+
+// Route  - /api/v1/user/blog
+userRoutes.use("/blog", isAuthenticated, ) // public route
+
+// Route  - /api/v1/user/map
+userRoutes.use("/map", isAuthenticated, usermaprouter);
+
+// Route - /api/v1/user/notification
+userRoutes.use("/notification", isAuthenticated, notificationrouter)
+
+// Route - /api/v1/user/notification
+userRoutes.use("/support", isAuthenticated, userSupportrouter)
+
+
 userRoutes.use("/address", isAuthenticated, addressRouter);
-userRoutes.use("/review", isAuthenticated, reviewRouter);
-userRoutes.use("/coupon", couponRouter);
+userRoutes.use("/", userManagementRouter);
+
 
 userRoutes.put('/update-profile', isAuthenticated, async (req, res) => {
     try {

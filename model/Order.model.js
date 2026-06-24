@@ -1,189 +1,100 @@
-// const mongoose = require("mongoose");
-
-// const orderSchema = new mongoose.Schema(
-//     {
-//         razorpay_order_id: {
-//             type: String,
-//             required: true,
-//         },
-//         delhiveryReceipt: {
-//             type: String,
-//         },
-//         user: {
-//             type: mongoose.Schema.Types.ObjectId,
-//             ref: "User",
-//             required: true,
-//         },
-//         items: [
-//             {
-//                 product: {
-//                     type: mongoose.Schema.Types.ObjectId,
-//                     ref: "Product",
-//                 },
-//                 withFallPico: {
-//                     type: Boolean,
-//                     required: true,
-//                 },
-//                 withTassels: {
-//                     type: Boolean,
-//                     required: true,
-//                 },
-//                 quantity: { type: Number, default: 1 },
-//             },
-//         ],
-//         shippingAddress: {
-//             type: mongoose.Schema.Types.ObjectId,
-//             ref: "Address",
-//         },
-//         discount: {
-//             type: Number,
-//         },
-//         offer: {
-//             type: Number,
-//         },
-//         shippingAddressSnapshot: {
-//             street: String,
-//             city: String,
-//             state: String,
-//             zip: String,
-//             country: String,
-//             phone: String,
-//         },
-//         paymentMethod: {
-//             type: String,
-//         },
-//         paymentStatus: {
-//             type: String,
-//             enum: ["Pending", "Paid", "Failed"],
-//             default: "Pending",
-//         },
-//         paidAt: {
-//             type: Date,
-//         },
-//         isDelivered: {
-//             type: Boolean,
-//             default: false,
-//         },
-//         deliveredAt: {
-//             type: Date,
-//         },
-//         deliveryStatus: {
-//             type: String,
-//             enum: [
-//                 "Pending",
-//                 "Shipped",
-//                 "Out for Delivery",
-//                 "Delivered",
-//                 "Canceled",
-//             ],
-//             default: "Pending",
-//         },
-//         totalAmount: Number,
-//     },
-//     { timestamps: true }
-// );
-
-// module.exports = mongoose.model("Order", orderSchema);
-
-
-
-///  2 Aug 
-
 const mongoose = require("mongoose");
 
+const orderItemSchema = new mongoose.Schema({
+  product: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Product",
+    required: true,
+  },
+  quantity: {
+    type: Number,
+    required: true,
+  },
+  withFallPico: {
+    type: Boolean,
+    default: false,
+  },
+  withTassels: {
+    type: Boolean,
+    default: false,
+  },
+  isOfferAplied: {
+    type: Boolean,
+    default: false,
+  },
+  offer: {
+    type: Number,
+    default: 0,
+  },
+});
+
+const shippingAddressSchema = new mongoose.Schema({
+  street: String,
+  city: String,
+  state: String,
+  postalCode: String,
+  country: String,
+  phone: String,
+});
+
 const orderSchema = new mongoose.Schema(
-    {
-        razorpay_order_id: {
-            type: String,
-            required: true,
-        },
-        delhiveryReceipt: {
-            type: String,
-        },
-        trackingId: {
-            type: String,
-        },
-        parcelWeight: {
-            type: Number,
-        },
-        deliveryPartner: {
-            type: String,
-        },
-        user: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
-            required: true,
-        },
-        items: [
-            {
-                product: {
-                    type: mongoose.Schema.Types.ObjectId,
-                    ref: "Product",
-                },
-                withFallPico: {
-                    type: Boolean,
-                    required: true,
-                },
-                withTassels: {
-                    type: Boolean,
-                    required: true,
-                },
-                quantity: { type: Number, default: 1 },
-                offer: {
-                    type: Number,
-                },
-            },
-        ],
-        shippingAddress: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Address",
-        },
-        discount: {
-            type: Number,
-        },
-        // offer: {
-        //     type: Number,
-        // },
-        shippingAddressSnapshot: {
-            street: String,
-            city: String,
-            state: String,
-            postalCode: String,
-            country: String,
-            phone: String,
-        },
-        paymentMethod: {
-            type: String,
-        },
-        paymentStatus: {
-            type: String,
-            enum: ["Pending", "Paid", "Failed"],
-            default: "Pending",
-        },
-        paidAt: {
-            type: Date,
-        },
-        isDelivered: {
-            type: Boolean,
-            default: false,
-        },
-        deliveredAt: {
-            type: Date,
-        },
-        deliveryStatus: {
-            type: String,
-            enum: [
-                "Pending",
-                "Shipped",
-                "Out for Delivery",
-                "Delivered",
-                "Canceled",
-            ],
-            default: "Pending",
-        },
-        totalAmount: Number,
+  {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     },
-    { timestamps: true }
+
+    items: [orderItemSchema],
+
+    shippingAddress: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Address",
+    },
+
+    // Snapshot (important)
+    shippingAddressSnapshot: shippingAddressSchema,
+
+    totalAmount: {
+      type: Number,
+      required: true,
+    },
+
+    discount: {
+      type: Number,
+      default: 0,
+    },
+
+    paymentMethod: {
+      type: String, // upi, card, wallet, cod
+    },
+
+    paymentStatus: {
+      type: String,
+      enum: ["Pending", "Paid", "Failed"],
+      default: "Pending",
+    },
+
+    orderStatus: {
+      type: String,
+      enum: [
+        "Pending",
+        "Confirmed",
+        "Shipped",
+        "Out for Delivery",
+        "Delivered",
+        "Cancelled",
+      ],
+      default: "Pending",
+    },
+
+    razorpay_order_id: String,
+    razorpay_payment_id: String,
+
+    paidAt: Date,
+    deliveredAt: Date,
+  },
+  { timestamps: true }
 );
 
 module.exports = mongoose.model("Order", orderSchema);
