@@ -22,6 +22,7 @@ const contactEmailTemplate = require("../email/template/contactEmailTemplate");
 
 
 const { 
+  submitServiceInquiry,
   submitContactForm, 
   getAllMessages,
   deleteAllMessages
@@ -33,6 +34,7 @@ const router = express.Router();
 
 // Contact Routes - Place before other routes to avoid conflicts
 // 🌐 PUBLIC ROUTE
+router.post("/service-inquiry", submitServiceInquiry);
 router.post("/contact", submitContactForm);
 router.get("/contact", getAllMessages);
 router.delete("/contact", deleteAllMessages);
