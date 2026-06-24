@@ -2,19 +2,31 @@ const mongoose = require("mongoose");
 
 const consultationSchema = new mongoose.Schema(
     {
+        // For authenticated users
         user: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",
-            required: true,
         },
+        // For public bookings
+        name: {
+            type: String,
+        },
+        email: {
+            type: String,
+        },
+        phone: {
+            type: String,
+        },
+        service: {
+            type: String,
+        },
+        // For mentor-based bookings
         mentor: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Mentor",
-            required: true,
         },
         mentorName: {
             type: String,
-            required: true,
         },
         mentorExpertise: [
             {
@@ -43,12 +55,11 @@ const consultationSchema = new mongoose.Schema(
         },
         status: {
             type: String,
-            enum: ['pending', 'confirmed', 'completed', 'cancelled', 'rescheduled'],
-            default: 'pending',
+            enum: ['Pending', 'pending', 'confirmed', 'completed', 'cancelled', 'rescheduled'],
+            default: 'Pending',
         },
         price: {
             type: Number,
-            required: true,
         },
         paymentStatus: {
             type: String,
@@ -68,6 +79,9 @@ const consultationSchema = new mongoose.Schema(
             type: String,
         },
         notes: {
+            type: String,
+        },
+        message: {
             type: String,
         },
         userNotes: {
@@ -142,6 +156,7 @@ consultationSchema.index({ date: 1 });
 consultationSchema.index({ status: 1 });
 consultationSchema.index({ user: 1, status: 1 });
 consultationSchema.index({ mentor: 1, date: 1 });
+consultationSchema.index({ email: 1 });
 
 const Consultation = mongoose.model("Consultation", consultationSchema);
 

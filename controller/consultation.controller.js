@@ -4,6 +4,127 @@ const User = require("../model/User.model");
 const mailSender = require("../utils/mailSender.utils");
 require("dotenv").config();
 
+// @desc    Public consultation booking (no authentication required)
+// @route   POST /api/v1/consultation/public-book
+// @access  Public
+exports.publicBookConsultation = asyncHandler(async (req, res) => {
+    try {
+        const { name, email, phone, service, preferredDate, preferredTime, message } = req.body;
+
+        if (!name || !email || !phone || !service || !preferredDate || !preferredTime) {
+            return res.error("Name, email, phone, service, date, and time are required", 400);
+        }
+
+        // Create consultation without user requirement
+        const bookingData = {
+            name,
+            email,
+            phone,
+            service,
+            date: preferredDate,
+            time: preferredTime,
+            message,
+            status: 'Pending',
+            notes: 'Public booking - no user account',
+        };
+
+        const consultation = await Consultation.create(bookingData);
+
+        // Send confirmation email to user
+        try {
+            const emailTemplate = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <title>Consultation Booking Confirmed - VyaparSewa</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 20px; }
+                        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+                        h2 { color: #2663eb; font-size: 24px; margin-bottom: 20px; text-align: center; }
+                        p { color: #333; line-height: 1.6; margin-bottom: 15px; }
+                        strong { color: #2663eb; }
+                        .footer { font-size: 12px; color: #777; margin-top: 30px; text-align: center; }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <h2>Consultation Booking Confirmed</h2>
+                        <p>Dear <strong>${name}</strong>,</p>
+                        <p>Thank you for booking a consultation with VyaparSewa. We have received your request and will contact you shortly to confirm your appointment.</p>
+                        <p><strong>Service:</strong> ${service}</p>
+                        <p><strong>Preferred Date:</strong> ${preferredDate}</p>
+                        <p><strong>Preferred Time:</strong> ${preferredTime}</p>
+                        <p><strong>Phone:</strong> ${phone}</p>
+                        ${message ? `<p><strong>Message:</strong> ${message}</p>` : ''}
+                        <p>Our team will reach out to you at <strong>${email}</strong> or <strong>${phone}</strong> to confirm the exact timing and provide further details.</p>
+                        <p>Regards,<br/>The VyaparSewa Team</p>
+                        <div class="footer">
+                            This is an automated message from VyaparSewa.
+                        </div>
+                    </div>
+                </body>
+                </html>
+            `;
+            
+            await mailSender(email, "Consultation Booking Confirmed - VyaparSewa", emailTemplate);
+        } catch (emailError) {
+            console.error('Error sending booking email:', emailError);
+        }
+
+        // Send notification email to admin
+        try {
+            const adminEmailTemplate = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <title>New Consultation Booking - VyaparSewa</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 20px; }
+                        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+                        h2 { color: #2663eb; font-size: 24px; margin-bottom: 20px; text-align: center; }
+                        p { color: #333; line-height: 1.6; margin-bottom: 15px; }
+                        strong { color: #2663eb; }
+                        .footer { font-size: 12px; color: #777; margin-top: 30px; text-align: center; }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <h2>New Consultation Booking</h2>
+                        <p>A new consultation booking has been received:</p>
+                        <p><strong>Name:</strong> ${name}</p>
+                        <p><strong>Email:</strong> ${email}</p>
+                        <p><strong>Phone:</strong> ${phone}</p>
+                        <p><strong>Service:</strong> ${service}</p>
+                        <p><strong>Preferred Date:</strong> ${preferredDate}</p>
+                        <p><strong>Preferred Time:</strong> ${preferredTime}</p>
+                        ${message ? `<p><strong>Message:</strong> ${message}</p>` : ''}
+                        <p>Please contact the client to confirm the appointment.</p>
+                        <div class="footer">
+                            This is an automated message from VyaparSewa.
+                        </div>
+                    </div>
+                </body>
+                </html>
+            `;
+            
+            await mailSender(process.env.ADMIN_EMAIL || "gunnikij1665@gmail.com", "New Consultation Booking - VyaparSewa", adminEmailTemplate);
+        } catch (emailError) {
+            console.error('Error sending admin email:', emailError);
+        }
+
+        return res.success("Consultation booked successfully. We will contact you shortly to confirm your appointment.", { consultation }, 201);
+    } catch (error) {
+        console.error('Error booking consultation:', error);
+        if (error.name === 'ValidationError') {
+            const messages = Object.values(error.errors).map(val => val.message);
+            return res.error(messages.join(', '), 400);
+        }
+        return res.error("Failed to book consultation", 500);
+    }
+});
+
 // @desc    Create new consultation booking
 // @route   POST /api/v1/consultation/book
 // @access  Private
