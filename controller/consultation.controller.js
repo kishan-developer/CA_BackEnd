@@ -417,6 +417,44 @@ exports.submitFeedback = asyncHandler(async (req, res) => {
     }
 });
 
+// @desc    Get all consultations (Public)
+// @route   GET /api/v1/consultation/all
+// @access  Public
+exports.getAllConsultationsPublic = asyncHandler(async (req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = (page - 1) * limit;
+
+        // Filter options
+        const filter = {};
+        if (req.query.status) filter.status = req.query.status;
+        if (req.query.service) filter.service = req.query.status;
+        if (req.query.date) filter.date = req.query.date;
+
+        const consultations = await Consultation.find(filter)
+            .select('name email phone service date time status message createdAt')
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
+
+        const total = await Consultation.countDocuments(filter);
+
+        return res.success("Consultations retrieved successfully", {
+            consultations,
+            pagination: {
+                page,
+                limit,
+                total,
+                pages: Math.ceil(total / limit)
+            }
+        });
+    } catch (error) {
+        console.error('Error fetching consultations:', error);
+        return res.error("Failed to fetch consultations", 500);
+    }
+});
+
 // @desc    Get all consultations (Admin)
 // @route   GET /api/v1/admin/consultations
 // @access  Private/Admin

@@ -2,6 +2,7 @@ const express = require("express");
 const { isAuthenticated, isAdmin } = require("../middleware/auth.middleware");
 const {
     publicBookConsultation,
+    getAllConsultationsPublic,
     bookConsultation,
     getMyConsultations,
     getConsultationById,
@@ -19,6 +20,7 @@ const router = express.Router();
 
 // Public Routes
 router.post("/consultation/public-book", publicBookConsultation);
+router.get("/consultation/all", getAllConsultationsPublic);
 router.get("/consultation/mentor/:mentorId/slots", getMentorBookedSlots);
 
 // User Routes
