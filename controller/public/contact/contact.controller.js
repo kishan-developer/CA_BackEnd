@@ -12,12 +12,21 @@ const contactAdminTemplate = require("../../../email/template/contactAdminTempla
 // @route  POST /api/contact
 const submitContactForm = async (req, res) => {
   try {
-    const { name, email, phone, message, userId } = req.body;
+    const { name, email, phone, service, city, message, userId } = req.body;
+
+    if (!name || !email || !phone || !service || !city || !message) {
+      return res.status(400).json({
+        success: false,
+        message: "All fields (name, email, phone, service, city, message) are required",
+      });
+    }
 
     const newContact = await Contact.create({
       name,
       email,
       phone,
+      service,
+      city,
       message,
     });
 
@@ -50,16 +59,16 @@ const submitContactForm = async (req, res) => {
     const userMailOptions = {
       from: process.env.SMTP_EMAIL,
       to: email,
-      subject: "Thank You for Contacting CA_Web",
-      html: contactUserTemplate({ name, message }),
+      subject: "Thank You for Contacting VyaparSewa",
+      html: contactUserTemplate({ name, service, city, message }),
     };
 
     // Admin Email
     const adminMailOptions = {
         from: process.env.SMTP_EMAIL,
         to: process.env.SMTP_EMAIL,
-        subject: `🔔 New Contact Inquiry from ${name} - CA_Web`,
-        html: contactAdminTemplate({ name, email, phone, message }),
+        subject: `🔔 New Contact Inquiry from ${name} - VyaparSewa`,
+        html: contactAdminTemplate({ name, email, phone, service, city, message }),
       };
 
     transporter.sendMail(userMailOptions, (err) => {

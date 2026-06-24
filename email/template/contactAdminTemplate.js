@@ -1,4 +1,4 @@
-function contactAdminTemplate({ name, email, phone, message }) {
+function contactAdminTemplate({ name, email, phone, service, city, message }) {
   return `
     <!DOCTYPE html>
     <html>
@@ -172,7 +172,17 @@ function contactAdminTemplate({ name, email, phone, message }) {
           
           <div class="info-section">
             <div class="info-label">📱 Phone Number</div>
-            <div class="info-value">${phone || 'Not provided'}</div>
+            <div class="info-value">${phone}</div>
+          </div>
+          
+          <div class="info-section">
+            <div class="info-label">🏢 Service</div>
+            <div class="info-value">${service}</div>
+          </div>
+          
+          <div class="info-section">
+            <div class="info-label">📍 City</div>
+            <div class="info-value">${city}</div>
           </div>
           
           <div class="message-section">

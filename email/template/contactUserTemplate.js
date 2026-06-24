@@ -1,4 +1,4 @@
-function contactUserTemplate({ name, message }) {
+function contactUserTemplate({ name, service, city, message }) {
   return `
     <!DOCTYPE html>
     <html>
@@ -57,6 +57,26 @@ function contactUserTemplate({ name, message }) {
           color: #333;
           margin-bottom: 20px;
         }
+        .details-box {
+          background-color: #f8f9fa;
+          border-left: 4px solid #2663eb;
+          padding: 20px;
+          margin: 20px 0;
+          border-radius: 5px;
+        }
+        .detail-row {
+          margin-bottom: 10px;
+        }
+        .detail-label {
+          font-weight: bold;
+          color: #555;
+          font-size: 14px;
+          text-transform: uppercase;
+        }
+        .detail-value {
+          color: #666;
+          line-height: 1.6;
+        }
         .message-box {
           background-color: #f8f9fa;
           border-left: 4px solid #2663eb;
@@ -110,6 +130,17 @@ function contactUserTemplate({ name, message }) {
           <p class="info-text">
             Thank you for reaching out to VyaparSewa! We have successfully received your inquiry and our team will review it shortly.
           </p>
+          
+          <div class="details-box">
+            <div class="detail-row">
+              <div class="detail-label">Service:</div>
+              <div class="detail-value">${service}</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">City:</div>
+              <div class="detail-value">${city}</div>
+            </div>
+          </div>
           
           <div class="message-box">
             <div class="message-label">Your Message:</div>
