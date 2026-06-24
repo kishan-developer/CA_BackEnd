@@ -90,6 +90,15 @@ app.use(sendCustomResponse);
 // API routes
 app.use("/api/v1", router);
 
+// Handle frontend routes - redirect to allow client-side routing
+app.get("/services", (req, res) => {
+  res.redirect("https://vyaparsewa.com/services/");
+});
+
+app.get("/services/:path", (req, res) => {
+  res.redirect(`https://vyaparsewa.com/services/${req.params.path}`);
+});
+
 // Default route
 app.get("/", (req, res) => {
   res.send("Vyapar Sewa APIs Live...");
