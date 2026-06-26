@@ -4,6 +4,7 @@ const adminRoutes = require("../routes/admin/index.routes");
 const serviceRoutes = require("../routes/service.routes");
 const consultationRoutes = require("../routes/consultation.routes");
 const notificationRoutes = require("../routes/notification.routes");
+const chatbotRoutes = require("../routes/chatbot.routes");
 
 
 
@@ -46,6 +47,7 @@ router.use("/payment", paymentRoutes);
 router.use("/", serviceRoutes);
 router.use("/", consultationRoutes);
 router.use("/notifications", notificationRoutes);
+router.use("/chatbot", chatbotRoutes);
 // Public routes
 // service
 
