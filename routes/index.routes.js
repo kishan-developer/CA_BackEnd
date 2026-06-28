@@ -28,6 +28,16 @@ const {
   getAllMessages,
   deleteAllMessages
 } = require("../controller/public/contact/contact.controller");
+
+const {
+  submitGSTComplianceForm,
+  getAllGSTComplianceRequests
+} = require("../controller/public/gst-compliance/gst-compliance.controller");
+
+const {
+  submitITRFilingForm,
+  getAllITRFilingRequests
+} = require("../controller/public/itr-filing/itr-filing.controller");
 const adminCustomRugNotificationTemplate = require("../email/template/adminCustomRugNotificationTemplate");
 
 
@@ -39,6 +49,14 @@ router.post("/service-inquiry", submitServiceInquiry);
 router.post("/contact", submitContactForm);
 router.get("/contact", getAllMessages);
 router.delete("/contact", deleteAllMessages);
+
+// GST Compliance Routes
+router.post("/gst-compliance", submitGSTComplianceForm);
+router.get("/gst-compliance", getAllGSTComplianceRequests);
+
+// ITR Filing Routes
+router.post("/itr-filing", submitITRFilingForm);
+router.get("/itr-filing", getAllITRFilingRequests);
 
 router.use("/auth", authRoutes);
 router.use("/admin", adminRoutes);

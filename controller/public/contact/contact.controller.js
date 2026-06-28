@@ -146,12 +146,27 @@ const submitServiceInquiry = async (req, res) => {
 // @route  POST /api/contact
 const submitContactForm = async (req, res) => {
   try {
-    const { name, email, phone, service, city, message, userId } = req.body;
+    const { 
+      name, 
+      email, 
+      phone, 
+      companyName, 
+      businessType, 
+      gstin, 
+      pan, 
+      annualTurnover, 
+      service, 
+      city, 
+      urgency, 
+      preferredContact, 
+      message, 
+      userId 
+    } = req.body;
 
     if (!name || !email || !phone || !service || !city || !message) {
       return res.status(400).json({
         success: false,
-        message: "All fields (name, email, phone, service, city, message) are required",
+        message: "Required fields (name, email, phone, service, city, message) are missing",
       });
     }
 
@@ -159,9 +174,17 @@ const submitContactForm = async (req, res) => {
       name,
       email,
       phone,
+      companyName,
+      businessType,
+      gstin,
+      pan,
+      annualTurnover,
       service,
       city,
+      urgency,
+      preferredContact,
       message,
+      formType: 'contact'
     });
 
     // Create Dashboard Notification if userId exists
@@ -189,12 +212,107 @@ const submitContactForm = async (req, res) => {
       },
     });
 
+    // User Email Template
+    const userEmailTemplate = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Thank You for Contacting VyaparSewa</title>
+        <style>
+          body { font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 20px; }
+          .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+          h2 { color: #2663eb; font-size: 24px; margin-bottom: 20px; text-align: center; }
+          p { color: #333; line-height: 1.6; margin-bottom: 15px; }
+          strong { color: #2663eb; }
+          .info-box { background-color: #f0f9ff; padding: 15px; border-radius: 8px; margin: 15px 0; }
+          .footer { font-size: 12px; color: #777; margin-top: 30px; text-align: center; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <h2>Thank You for Contacting VyaparSewa</h2>
+          <p>Dear <strong>${name}</strong>,</p>
+          <p>We have received your inquiry and our team will contact you shortly with detailed information about your requirements.</p>
+          
+          <div class="info-box">
+            <p><strong>Service Category:</strong> ${service}</p>
+            <p><strong>City:</strong> ${city}</p>
+            ${urgency ? `<p><strong>Urgency:</strong> ${urgency}</p>` : ''}
+            ${preferredContact ? `<p><strong>Preferred Contact Method:</strong> ${preferredContact}</p>` : ''}
+          </div>
+          
+          <p><strong>Your Message:</strong> ${message}</p>
+          ${companyName ? `<p><strong>Company:</strong> ${companyName}</p>` : ''}
+          ${businessType ? `<p><strong>Business Type:</strong> ${businessType}</p>` : ''}
+          
+          <p>Our team will reach out to you at <strong>${email}</strong> or <strong>${phone}</strong> within 24-48 hours to discuss your requirements.</p>
+          <p>Regards,<br/>The VyaparSewa Team</p>
+          <div class="footer">
+            This is an automated message from VyaparSewa.
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    // Admin Email Template
+    const adminEmailTemplate = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>New Contact Inquiry - VyaparSewa</title>
+        <style>
+          body { font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 20px; }
+          .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+          h2 { color: #2663eb; font-size: 24px; margin-bottom: 20px; text-align: center; }
+          p { color: #333; line-height: 1.6; margin-bottom: 15px; }
+          strong { color: #2663eb; }
+          .info-box { background-color: #f0f9ff; padding: 15px; border-radius: 8px; margin: 15px 0; }
+          .footer { font-size: 12px; color: #777; margin-top: 30px; text-align: center; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <h2>🔔 New Contact Inquiry</h2>
+          <p>A new contact inquiry has been received:</p>
+          
+          <div class="info-box">
+            <p><strong>Name:</strong> ${name}</p>
+            <p><strong>Email:</strong> ${email}</p>
+            <p><strong>Phone:</strong> ${phone}</p>
+            <p><strong>Service:</strong> ${service}</p>
+            <p><strong>City:</strong> ${city}</p>
+            ${urgency ? `<p><strong>Urgency:</strong> ${urgency}</p>` : ''}
+            ${preferredContact ? `<p><strong>Preferred Contact:</strong> ${preferredContact}</p>` : ''}
+          </div>
+          
+          ${companyName ? `<p><strong>Company Name:</strong> ${companyName}</p>` : ''}
+          ${businessType ? `<p><strong>Business Type:</strong> ${businessType}</p>` : ''}
+          ${gstin ? `<p><strong>GSTIN:</strong> ${gstin}</p>` : ''}
+          ${pan ? `<p><strong>PAN:</strong> ${pan}</p>` : ''}
+          ${annualTurnover ? `<p><strong>Annual Turnover:</strong> ${annualTurnover}</p>` : ''}
+          
+          <p><strong>Message:</strong> ${message}</p>
+          
+          <p>Please contact the client to provide more information about the service.</p>
+          <div class="footer">
+            This is an automated message from VyaparSewa.
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
     // User Email
     const userMailOptions = {
       from: process.env.SMTP_EMAIL,
       to: email,
       subject: "Thank You for Contacting VyaparSewa",
-      html: contactUserTemplate({ name, service, city, message }),
+      html: userEmailTemplate,
     };
 
     // Admin Email
@@ -202,8 +320,8 @@ const submitContactForm = async (req, res) => {
         from: process.env.SMTP_EMAIL,
         to: process.env.SMTP_EMAIL,
         subject: `🔔 New Contact Inquiry from ${name} - VyaparSewa`,
-        html: contactAdminTemplate({ name, email, phone, service, city, message }),
-      };
+        html: adminEmailTemplate,
+    };
 
     transporter.sendMail(userMailOptions, (err) => {
       if (err) console.log("User Email failed:", err);
